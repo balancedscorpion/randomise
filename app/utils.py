@@ -54,7 +54,9 @@ def randomise(
     """
     # Set sensible defaults optimized for production use
     if algorithm is None:
-        algorithm = HashAlgorithm.XXH3  # Fastest modern algorithm with excellent distribution
+        # Use MD5 as default - no binary dependencies, works everywhere
+        # TODO: Switch back to XXH3 once binary compatibility is confirmed
+        algorithm = HashAlgorithm.MD5
     
     if distribution is None:
         distribution = DistributionMethod.MAD  # Better than modulus
