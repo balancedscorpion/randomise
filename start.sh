@@ -15,7 +15,7 @@ echo "Checking Python modules..."
 python -c "import fastapi; print(f'✓ FastAPI {fastapi.__version__}')" || echo "✗ FastAPI not found"
 python -c "import uvicorn; print(f'✓ Uvicorn {uvicorn.__version__}')" || echo "✗ Uvicorn not found"
 python -c "import xxhash; print(f'✓ xxhash {xxhash.VERSION}')" || echo "✗ xxhash not found"
-python -c "import mmh3; print(f'✓ mmh3 {mmh3.__version__}')" || echo "✗ mmh3 not found"
+python -c "import mmh3; print('✓ mmh3')" || echo "✗ mmh3 not found"
 echo ""
 
 echo "Checking app module..."
