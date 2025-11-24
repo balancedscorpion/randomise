@@ -42,7 +42,7 @@ class RandomiseRequest(BaseModel):
         ...,
         min_length=2,
         max_length=100,
-        description="List of proportions for each bucket (must sum to 1.0)",
+        description="List of proportions for each variant (must sum to 1.0)",
         examples=[[0.5, 0.5], [0.5, 0.3, 0.2], [0.9, 0.1]]
     )
     
@@ -62,7 +62,7 @@ class RandomiseRequest(BaseModel):
         None,
         ge=100,
         le=1000000,
-        description="Distribution table size (100-1000000). Defaults to 10000.",
+        description="Internal hash table size for distribution (100-1000000). Defaults to 10000. Higher values = more precision.",
         examples=[10000, 100000]
     )
     
@@ -125,10 +125,10 @@ class RandomiseRequest(BaseModel):
 class RandomiseResponse(BaseModel):
     """Response model for randomisation endpoint."""
     
-    bucket: int = Field(
+    variant: int = Field(
         ...,
         ge=0,
-        description="The assigned bucket (0-indexed)",
+        description="The assigned variant (0-indexed)",
         examples=[0, 1, 2]
     )
     
@@ -142,10 +142,10 @@ class RandomiseResponse(BaseModel):
         description="The experiment seed used"
     )
     
-    num_buckets: int = Field(
+    num_variants: int = Field(
         ...,
         ge=2,
-        description="Total number of buckets available"
+        description="Total number of variants in the test"
     )
 
 
@@ -180,11 +180,11 @@ async def root():
 )
 async def randomise_endpoint(request: RandomiseRequest) -> RandomiseResponse:
     """
-    Assign a user to a bucket based on weights.
+    Assign a user to a variant based on weights.
     
     This endpoint provides deterministic A/B testing randomisation:
-    - Same userid + seed will always return the same bucket
-    - Lightning-fast performance with xxh3 hash algorithm
+    - Same userid + seed will always return the same variant
+    - Lightning-fast performance with MD5 hash algorithm
     - High precision distribution with MAD method
     
     ## Examples
@@ -197,6 +197,7 @@ async def randomise_endpoint(request: RandomiseRequest) -> RandomiseResponse:
       "weights": [0.5, 0.5]
     }
     ```
+    Returns: `{"variant": 0, ...}` or `{"variant": 1, ...}`
     
     ### A/B/C test (50/30/20):
     ```json
@@ -206,6 +207,7 @@ async def randomise_endpoint(request: RandomiseRequest) -> RandomiseResponse:
       "weights": [0.5, 0.3, 0.2]
     }
     ```
+    Returns: `{"variant": 0, ...}` or `{"variant": 1, ...}` or `{"variant": 2, ...}`
     
     ### 90% control, 10% treatment:
     ```json
@@ -215,6 +217,7 @@ async def randomise_endpoint(request: RandomiseRequest) -> RandomiseResponse:
       "weights": [0.9, 0.1]
     }
     ```
+    Returns: `{"variant": 0, ...}` (90% chance) or `{"variant": 1, ...}` (10% chance)
     """
     try:
         # Convert algorithm string to enum if provided
@@ -238,8 +241,8 @@ async def randomise_endpoint(request: RandomiseRequest) -> RandomiseResponse:
             }
             distribution = distribution_map.get(request.distribution)
         
-        # Call the randomise function
-        bucket = randomise(
+        # Call the randomise function (returns bucket index, which represents the variant)
+        variant = randomise(
             userid=request.userid,
             seed=request.seed,
             weights=request.weights,
@@ -250,10 +253,10 @@ async def randomise_endpoint(request: RandomiseRequest) -> RandomiseResponse:
         
         # Return successful response
         return RandomiseResponse(
-            bucket=bucket,
+            variant=variant,
             userid=request.userid,
             seed=request.seed,
-            num_buckets=len(request.weights)
+            num_variants=len(request.weights)
         )
         
     except ImportError as e:
@@ -322,7 +325,7 @@ async def test_imports():
     try:
         from app.utils import randomise
         result = randomise("test_user", "test_seed", [0.5, 0.5], algorithm=HashAlgorithm.MD5)
-        results["randomise_md5"] = f"✓ OK (bucket={result})"
+        results["randomise_md5"] = f"✓ OK (variant={result})"
     except Exception as e:
         results["randomise_md5"] = f"✗ FAILED: {str(e)}"
         return {"status": "error", "results": results}
@@ -330,14 +333,14 @@ async def test_imports():
     # Test with XXH3 (requires xxhash)
     try:
         result = randomise("test_user", "test_seed", [0.5, 0.5], algorithm=HashAlgorithm.XXH3)
-        results["randomise_xxh3"] = f"✓ OK (bucket={result})"
+        results["randomise_xxh3"] = f"✓ OK (variant={result})"
     except Exception as e:
         results["randomise_xxh3"] = f"✗ FAILED: {str(e)}"
     
     # Test with MurmurHash3 (requires mmh3)
     try:
         result = randomise("test_user", "test_seed", [0.5, 0.5], algorithm=HashAlgorithm.MURMUR32)
-        results["randomise_murmur"] = f"✓ OK (bucket={result})"
+        results["randomise_murmur"] = f"✓ OK (variant={result})"
     except Exception as e:
         results["randomise_murmur"] = f"✗ FAILED: {str(e)}"
     
