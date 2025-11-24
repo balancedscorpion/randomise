@@ -465,16 +465,24 @@ Deterministic assignment is crucial for:
 ## Project Structure
 
 ```
-├── app
+├── app/
 │   ├── __init__.py
-│   ├── api.py            # FastAPI web service
-│   ├── main.py           # Demo application
-│   ├── randomise.py      # Core randomisation system
-│   └── utils.py          # Simple utility functions
-├── ab_testing_tutorial.ipynb  # Comprehensive tutorial
-├── pyproject.toml        # Poetry configuration
-├── poetry.lock           # Dependency lock file
-└── README.md             # This file
+│   ├── api.py                 # FastAPI web service
+│   ├── main.py                # Demo application
+│   ├── randomise.py           # Core randomisation system
+│   └── utils.py               # Simple utility functions
+├── ab_testing_tutorial.ipynb # Comprehensive tutorial with benchmarks
+├── Demo_Usage.ipynb           # Quick usage examples
+├── Dockerfile                 # Production-ready Docker image
+├── .dockerignore              # Docker build optimization
+├── railway.toml               # Railway.app configuration
+├── render.yaml                # Render.com configuration
+├── fly.toml                   # Fly.io configuration
+├── test-docker.sh             # Local Docker testing script
+├── DEPLOYMENT.md              # Detailed deployment guide
+├── pyproject.toml             # Poetry dependencies
+├── poetry.lock                # Dependency lock file
+└── README.md                  # This file
 ```
 
 ## Development
@@ -508,6 +516,8 @@ The API is designed for high-throughput production use:
 ## Deployment
 
 The API is ready for one-click deployment to major cloud platforms. All configuration files are included.
+
+📖 **See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed deployment guide and troubleshooting.**
 
 ### Platform Comparison
 
