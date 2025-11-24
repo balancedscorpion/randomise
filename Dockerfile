@@ -45,5 +45,6 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD python -c "import os, urllib.request; urllib.request.urlopen(f'http://localhost:{os.getenv(\"PORT\", \"8000\")}/health')"
 
 # Run the application (Railway will set $PORT automatically)
-CMD uvicorn app.api:app --host 0.0.0.0 --port $PORT
+# Use shell form to properly expand $PORT variable
+CMD sh -c "uvicorn app.api:app --host 0.0.0.0 --port ${PORT:-8000} --log-level info"
 
