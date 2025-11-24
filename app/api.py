@@ -287,6 +287,55 @@ async def health_check():
     }
 
 
+@app.get("/test-imports", tags=["Health"])
+async def test_imports():
+    """Test if all imports and functions work."""
+    results = {}
+    
+    # Test imports
+    try:
+        from app.randomise import HashAlgorithm, Randomiser
+        results["import_randomise"] = "✓ OK"
+    except Exception as e:
+        results["import_randomise"] = f"✗ FAILED: {str(e)}"
+        return {"status": "error", "results": results}
+    
+    try:
+        from app.utils import randomise
+        results["import_utils"] = "✓ OK"
+    except Exception as e:
+        results["import_utils"] = f"✗ FAILED: {str(e)}"
+        return {"status": "error", "results": results}
+    
+    # Test actual randomisation with MD5 (no external deps)
+    try:
+        from app.utils import randomise
+        result = randomise("test_user", "test_seed", [0.5, 0.5], algorithm=HashAlgorithm.MD5)
+        results["randomise_md5"] = f"✓ OK (bucket={result})"
+    except Exception as e:
+        results["randomise_md5"] = f"✗ FAILED: {str(e)}"
+        return {"status": "error", "results": results}
+    
+    # Test with XXH3 (requires xxhash)
+    try:
+        result = randomise("test_user", "test_seed", [0.5, 0.5], algorithm=HashAlgorithm.XXH3)
+        results["randomise_xxh3"] = f"✓ OK (bucket={result})"
+    except Exception as e:
+        results["randomise_xxh3"] = f"✗ FAILED: {str(e)}"
+    
+    # Test with MurmurHash3 (requires mmh3)
+    try:
+        result = randomise("test_user", "test_seed", [0.5, 0.5], algorithm=HashAlgorithm.MURMUR32)
+        results["randomise_murmur"] = f"✓ OK (bucket={result})"
+    except Exception as e:
+        results["randomise_murmur"] = f"✗ FAILED: {str(e)}"
+    
+    return {
+        "status": "success",
+        "results": results
+    }
+
+
 if __name__ == "__main__":
     import uvicorn
     
