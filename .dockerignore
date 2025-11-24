@@ -50,4 +50,6 @@ docker-compose.yml
 # Others
 *.log
 .env
+test-*.sh
+DEPLOYMENT.md
 

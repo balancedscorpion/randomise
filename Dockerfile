@@ -31,6 +31,10 @@ COPY --from=builder /app/.venv /app/.venv
 # Copy application code
 COPY app ./app
 
+# Copy startup script
+COPY start.sh ./start.sh
+RUN chmod +x start.sh
+
 # Add venv to PATH
 ENV PATH="/app/.venv/bin:$PATH"
 
@@ -45,6 +49,5 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD python -c "import os, urllib.request; urllib.request.urlopen(f'http://localhost:{os.getenv(\"PORT\", \"8000\")}/health')"
 
 # Run the application (Railway will set $PORT automatically)
-# Use shell to properly expand environment variables
-CMD ["sh", "-c", "uvicorn app.api:app --host 0.0.0.0 --port ${PORT:-8000} --log-level info"]
+CMD ["./start.sh"]
 
