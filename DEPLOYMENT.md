@@ -43,8 +43,6 @@ After the first deployment:
 3. **Verify "Public Networking" is enabled**
 4. **Note your public URL**: `https://your-app-name.up.railway.app`
 
-> **Why?** Railway defaults to port 8000, but the app listens on port 8080 (set by Railway's `$PORT` environment variable). The port mismatch causes 502 errors.
-
 ## Step 5: Test Your Deployment
 
 ```bash
@@ -85,7 +83,13 @@ git push origin main
 
 ---
 
-## Troubleshooting
+1. Connect repository at [render.com](https://render.com)
+2. Select "New Web Service"
+3. Configure:
+   - Environment: Docker
+   - Branch: main
+   - Health Check Path: `/health`
+4. Deploy (takes ~3-4 minutes)
 
 ### 502 Bad Gateway Error
 
