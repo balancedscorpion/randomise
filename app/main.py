@@ -29,9 +29,9 @@ def main():
     test_users = ["user1", "user2", "user3", "user4", "user5"]
     
     for user_id in test_users:
-        bucket = randomiser.assign(user_id)
-        variant = "A" if bucket == 0 else "B"
-        print(f"  {user_id} -> Bucket {bucket} (Variant {variant})")
+        variant = randomiser.assign(user_id)
+        treatment = "A" if variant == 0 else "B"
+        print(f"  {user_id} -> Variant {variant} (Treatment {treatment})")
     
     print()
     
@@ -49,10 +49,10 @@ def main():
     
     for user_id in test_users:
         details = randomiser_abc.assign_with_details(user_id)
-        variant = chr(65 + details['bucket'])  # Convert 0,1,2 to A,B,C
+        treatment = chr(65 + details['variant'])  # Convert 0,1,2 to A,B,C
         print(f"  {user_id} -> Hash: {details['hash']}, "
               f"Index: {details['index']}, "
-              f"Bucket: {details['bucket']} (Variant {variant})")
+              f"Variant: {details['variant']} (Treatment {treatment})")
     
     print()
     
@@ -62,10 +62,10 @@ def main():
     print("Running assignment 3 times for 'user1':")
     
     for i in range(3):
-        bucket = randomiser.assign("user1")
-        print(f"  Run {i+1}: Bucket {bucket}")
+        variant = randomiser.assign("user1")
+        print(f"  Run {i+1}: Variant {variant}")
     
-    print("\n✓ Same user always gets same bucket (deterministic)")
+    print("\n✓ Same user always gets same variant (deterministic)")
     
     print()
     
@@ -73,9 +73,11 @@ def main():
     print("Example 4: Step-by-step Process")
     print("-" * 40)
     
+    from app.randomise import VariantAllocation
+    
     hasher = Hasher("my-seed", HashAlgorithm.MD5)
     distribution = Distribution(100, DistributionMethod.MODULUS)
-    bucketing = Bucketing([0.5, 0.5], 100)
+    variant_allocation = VariantAllocation([0.5, 0.5], 100)
     
     user_id = "user123"
     
@@ -85,8 +87,8 @@ def main():
     index = distribution.distribute(hash_value)
     print(f"  Step 2 - Distribute to index: {index}")
     
-    bucket = bucketing.get_bucket(index)
-    print(f"  Step 3 - Assign to bucket: {bucket}")
+    variant = variant_allocation.get_variant(index)
+    print(f"  Step 3 - Assign to variant: {variant}")
     
     print("\n=== Demo Complete ===")
 

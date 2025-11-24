@@ -21,35 +21,35 @@ def randomise(
     table_size: Optional[int] = None
 ) -> int:
     """
-    Assign a user to a bucket based on weights.
+    Assign a user to a variant based on weights.
     
     This is a simple, batteries-included function for A/B testing.
-    Same userid + seed will always return the same bucket.
+    Same userid + seed will always return the same variant.
     
     Args:
         userid: The user identifier (string)
         seed: The experiment seed (string) - use different seeds for different experiments
-        weights: List of proportions for each bucket (e.g., [0.5, 0.5] for 50/50 split)
-        algorithm: Hash algorithm (defaults to XXH3 for best speed and distribution)
+        weights: List of proportions for each variant (e.g., [0.5, 0.5] for 50/50 split)
+        algorithm: Hash algorithm (defaults to MD5 for best compatibility)
         distribution: Distribution method (defaults to MAD for best distribution)
         table_size: Size of distribution table (defaults to 10000 for high precision)
     
     Returns:
-        Bucket number (0-indexed, e.g., 0 or 1 for A/B test)
+        Variant number (0-indexed, e.g., 0 or 1 for A/B test)
     
     Examples:
         >>> # Simple A/B test (50/50)
-        >>> bucket = randomise("user123", "homepage-test", [0.5, 0.5])
-        >>> variant = "A" if bucket == 0 else "B"
+        >>> variant = randomise("user123", "homepage-test", [0.5, 0.5])
+        >>> treatment = "A" if variant == 0 else "B"
         
         >>> # A/B/C test (50/30/20)
-        >>> bucket = randomise("user456", "pricing-test", [0.5, 0.3, 0.2])
+        >>> variant = randomise("user456", "pricing-test", [0.5, 0.3, 0.2])
         >>> variants = ["control", "variant_a", "variant_b"]
-        >>> assigned = variants[bucket]
+        >>> assigned = variants[variant]
         
         >>> # 90% control, 10% treatment
-        >>> bucket = randomise("user789", "risky-feature", [0.9, 0.1])
-        >>> if bucket == 1:
+        >>> variant = randomise("user789", "risky-feature", [0.9, 0.1])
+        >>> if variant == 1:
         >>>     enable_new_feature()
     """
     # Set sensible defaults optimized for production use
@@ -85,21 +85,21 @@ def randomise_with_details(
     table_size: Optional[int] = None
 ) -> dict:
     """
-    Assign a user to a bucket with detailed debugging information.
+    Assign a user to a variant with detailed debugging information.
     
-    Same as randomise() but returns a dictionary with hash, index, and bucket details.
+    Same as randomise() but returns a dictionary with hash, index, and variant details.
     Useful for debugging or logging.
     
     Args:
         userid: The user identifier (string)
         seed: The experiment seed (string)
-        weights: List of proportions for each bucket
-        algorithm: Hash algorithm (defaults to XXH3)
+        weights: List of proportions for each variant
+        algorithm: Hash algorithm (defaults to MD5)
         distribution: Distribution method (defaults to MAD)
         table_size: Size of distribution table (defaults to 10000)
     
     Returns:
-        Dictionary with keys: 'identifier', 'hash', 'index', 'bucket'
+        Dictionary with keys: 'identifier', 'hash', 'index', 'variant'
     
     Example:
         >>> details = randomise_with_details("user123", "test-1", [0.5, 0.5])
@@ -108,7 +108,7 @@ def randomise_with_details(
             'identifier': 'user123',
             'hash': 1234567890,
             'index': 4567,
-            'bucket': 0
+            'variant': 0
         }
     """
     # Set defaults

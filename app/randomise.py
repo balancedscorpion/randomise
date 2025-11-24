@@ -171,20 +171,20 @@ class Distribution:
             self._mad_prime = prime
 
 
-class Bucketing:
+class VariantAllocation:
     """
-    Bucketing class for allocating table indices to buckets based on proportions.
+    VariantAllocation class for allocating table indices to variants based on proportions.
     
-    This assigns indices to buckets according to specified proportions,
+    This assigns indices to variants according to specified proportions,
     useful for A/B testing with multiple variants.
     """
     
     def __init__(self, proportions: List[float], table_size: int):
         """
-        Initialize the Bucketing.
+        Initialize the VariantAllocation.
         
         Args:
-            proportions: List of proportions for each bucket (should sum to 1.0)
+            proportions: List of proportions for each variant (should sum to 1.0)
             table_size: The size of the distribution table
             
         Raises:
@@ -202,13 +202,13 @@ class Bucketing:
         
         self.proportions = proportions
         self.table_size = table_size
-        self.num_buckets = len(proportions)
+        self.num_variants = len(proportions)
         
-        # Pre-calculate bucket boundaries for efficiency
+        # Pre-calculate variant boundaries for efficiency
         self._calculate_boundaries()
     
     def _calculate_boundaries(self):
-        """Calculate the boundary indices for each bucket."""
+        """Calculate the boundary indices for each variant."""
         self.boundaries = []
         cumulative = 0.0
         
@@ -220,15 +220,15 @@ class Bucketing:
         # Ensure the last boundary is exactly table_size
         self.boundaries[-1] = self.table_size
     
-    def get_bucket(self, index: int) -> int:
+    def get_variant(self, index: int) -> int:
         """
-        Get the bucket number for a given table index.
+        Get the variant number for a given table index.
         
         Args:
             index: The table index (0 to table_size-1)
             
         Returns:
-            The bucket number (0 to num_buckets-1)
+            The variant number (0 to num_variants-1)
             
         Raises:
             ValueError: If index is out of range
@@ -236,18 +236,22 @@ class Bucketing:
         if index < 0 or index >= self.table_size:
             raise ValueError(f"Index {index} out of range [0, {self.table_size})")
         
-        # Find which bucket this index falls into
-        for bucket_num, boundary in enumerate(self.boundaries):
+        # Find which variant this index falls into
+        for variant_num, boundary in enumerate(self.boundaries):
             if index < boundary:
-                return bucket_num
+                return variant_num
         
-        # Should never reach here, but return last bucket as fallback
-        return self.num_buckets - 1
+        # Should never reach here, but return last variant as fallback
+        return self.num_variants - 1
+
+
+# Backwards compatibility: Keep old name as alias
+Bucketing = VariantAllocation
 
 
 class Randomiser:
     """
-    Complete randomisation system combining hashing, distribution, and bucketing.
+    Complete randomisation system combining hashing, distribution, and variant allocation.
     
     This provides a convenient interface for the entire A/B testing flow.
     """
@@ -265,24 +269,24 @@ class Randomiser:
         
         Args:
             seed: The seed value for deterministic hashing
-            proportions: List of proportions for each bucket
+            proportions: List of proportions for each variant
             table_size: The size of the distribution table
             hash_algorithm: The hashing algorithm to use
             distribution_method: The distribution method to use
         """
         self.hasher = Hasher(seed, hash_algorithm)
         self.distribution = Distribution(table_size, distribution_method)
-        self.bucketing = Bucketing(proportions, table_size)
+        self.variant_allocation = VariantAllocation(proportions, table_size)
     
     def assign(self, identifier: str) -> int:
         """
-        Assign an identifier to a bucket.
+        Assign an identifier to a variant.
         
         Args:
             identifier: The identifier to assign
             
         Returns:
-            The bucket number (0 to num_buckets-1)
+            The variant number (0 to num_variants-1)
         """
         # Step 1: Hash the identifier
         hash_value = self.hasher.hash(identifier)
@@ -290,28 +294,28 @@ class Randomiser:
         # Step 2: Distribute to table index
         index = self.distribution.distribute(hash_value)
         
-        # Step 3: Map to bucket
-        bucket = self.bucketing.get_bucket(index)
+        # Step 3: Map to variant
+        variant = self.variant_allocation.get_variant(index)
         
-        return bucket
+        return variant
     
     def assign_with_details(self, identifier: str) -> dict:
         """
-        Assign an identifier to a bucket with detailed information.
+        Assign an identifier to a variant with detailed information.
         
         Args:
             identifier: The identifier to assign
             
         Returns:
-            Dictionary with hash, index, and bucket information
+            Dictionary with hash, index, and variant information
         """
         hash_value = self.hasher.hash(identifier)
         index = self.distribution.distribute(hash_value)
-        bucket = self.bucketing.get_bucket(index)
+        variant = self.variant_allocation.get_variant(index)
         
         return {
             'identifier': identifier,
             'hash': hash_value,
             'index': index,
-            'bucket': bucket
+            'variant': variant
         }
