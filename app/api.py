@@ -287,6 +287,17 @@ async def health_check():
     }
 
 
+@app.get("/debug", tags=["Health"])
+async def debug_status():
+    """Debug endpoint to check import status."""
+    return {
+        "imports_ok": IMPORTS_OK,
+        "import_error": IMPORT_ERROR,
+        "has_randomise": randomise is not None,
+        "has_hash_algorithm": HashAlgorithm is not None
+    }
+
+
 @app.get("/test-imports", tags=["Health"])
 async def test_imports():
     """Test if all imports and functions work."""
