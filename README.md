@@ -596,6 +596,48 @@ docker run -p 3000:3000 -e PORT=3000 randomisation-api
 5. **HTTPS**: Use a reverse proxy (nginx, Traefik) for SSL termination
 6. **Caching**: Consider caching for frequently requested user/seed combinations
 
+## Troubleshooting Deployment
+
+### Health Check Failures
+
+If your deployment health checks are failing:
+
+1. **Check the logs** - Look for startup errors:
+   ```
+   # Railway: Click "View Logs" in the deployment
+   # Render: Check the "Logs" tab
+   # Fly.io: fly logs
+   ```
+
+2. **Verify dependencies installed** - Ensure xxhash and mmh3 compiled:
+   ```
+   Look for: "Installing xxhash (3.6.0)" in build logs
+   ```
+
+3. **Check port binding** - The app should show:
+   ```
+   INFO: Uvicorn running on http://0.0.0.0:XXXX
+   ```
+
+4. **Test locally** - Run the included test script:
+   ```bash
+   ./test-docker.sh
+   ```
+
+### Common Issues
+
+**"Service Unavailable" during health checks:**
+- Solution: Increase `healthcheckTimeout` in `railway.toml` (already set to 300s)
+- Cause: Cold starts can take 30-60 seconds on free tiers
+
+**Build failures with xxhash/mmh3:**
+- Solution: The Dockerfile includes gcc/g++ - no action needed
+- If persists: Check platform build logs for compilation errors
+
+**Port conflicts:**
+- Railway/Render automatically set `$PORT` - no configuration needed
+- For Docker: Use `-e PORT=3000` to override
+
 ### Environment Variables
 
 The API automatically adapts to platform environment variables:
