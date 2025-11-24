@@ -45,7 +45,6 @@ htmlcov/
 Thumbs.db
 
 # Docker
-Dockerfile.optimized
 docker-compose.yml
 
 # Others

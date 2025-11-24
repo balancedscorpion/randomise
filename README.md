@@ -507,35 +507,84 @@ The API is designed for high-throughput production use:
 
 ## Deployment
 
-### Docker Deployment
+The API is ready for one-click deployment to major cloud platforms. All configuration files are included.
 
-Create a `Dockerfile`:
+### Platform Comparison
 
-```dockerfile
-FROM python:3.11-slim
+| Platform | Free Tier | Deploy Time | Custom Domain | Auto HTTPS | Config File |
+|----------|-----------|-------------|---------------|------------|-------------|
+| **Railway** | ✅ Yes | ~2 min | ✅ Free | ✅ Auto | `railway.toml` |
+| **Render** | ✅ Yes | ~3 min | ✅ Free | ✅ Auto | `render.yaml` |
+| **Fly.io** | ✅ Yes | ~2 min | ✅ Free | ✅ Auto | `fly.toml` |
+| **Docker** | N/A | ~1 min | Manual | Manual | `Dockerfile` |
 
-WORKDIR /app
+### Quick Deploy to Railway (Recommended) 🚂
 
-# Install dependencies
-COPY pyproject.toml poetry.lock ./
-RUN pip install poetry && poetry config virtualenvs.create false
-RUN poetry install --no-dev
+Railway provides one-click deployment with automatic HTTPS and custom domains.
 
-# Copy application
-COPY app ./app
+**Deploy in 3 steps:**
 
-# Expose port
-EXPOSE 8000
+1. **Push to GitHub:**
+   ```bash
+   git add .
+   git commit -m "Ready for deployment"
+   git push origin main
+   ```
 
-# Run the application
-CMD ["uvicorn", "app.api:app", "--host", "0.0.0.0", "--port", "8000"]
+2. **Connect to Railway:**
+   - Go to [railway.app](https://railway.app)
+   - Click "Start a New Project"
+   - Select "Deploy from GitHub repo"
+   - Choose your repository
+
+3. **Done!** Railway will:
+   - Automatically detect the Dockerfile
+   - Build and deploy your API
+   - Provide a public URL (e.g., `https://your-app.up.railway.app`)
+   - Set up automatic deployments on git push
+
+**Configuration:**
+The included `railway.toml` file provides optimal settings. Railway automatically:
+- Sets the `$PORT` environment variable
+- Monitors the `/health` endpoint
+- Restarts on failures
+- Provides free HTTPS
+
+### Deploy to Render
+
+1. Create a new Web Service at [render.com](https://render.com)
+2. Connect your GitHub repository
+3. Use these settings:
+   - **Environment:** Docker
+   - **Health Check Path:** `/health`
+   - **Auto-Deploy:** Yes
+
+### Deploy to Fly.io
+
+```bash
+# Install flyctl
+curl -L https://fly.io/install.sh | sh
+
+# Launch your app
+fly launch
+
+# Deploy
+fly deploy
 ```
+
+### Docker Deployment (Self-Hosted)
 
 Build and run:
 
 ```bash
 docker build -t randomisation-api .
 docker run -p 8000:8000 randomisation-api
+```
+
+Or with custom port:
+
+```bash
+docker run -p 3000:3000 -e PORT=3000 randomisation-api
 ```
 
 ### Production Considerations
@@ -549,12 +598,23 @@ docker run -p 8000:8000 randomisation-api
 
 ### Environment Variables
 
-You can configure the API using environment variables:
+The API automatically adapts to platform environment variables:
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `PORT` | Server port (auto-set by Railway/Render/Fly) | `8000` | No |
+| `HOST` | Server host | `0.0.0.0` | No |
+
+**For Railway/Render/Fly.io:** No configuration needed - they set `PORT` automatically.
+
+**For manual deployment:**
 
 ```bash
-export API_HOST=0.0.0.0
-export API_PORT=8000
-export API_WORKERS=4
+export PORT=3000
+uvicorn app.api:app --host 0.0.0.0 --port $PORT
+
+# Or with workers
+uvicorn app.api:app --host 0.0.0.0 --port $PORT --workers 4
 ```
 
 ## Dependencies

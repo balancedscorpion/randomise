@@ -34,13 +34,16 @@ COPY app ./app
 # Add venv to PATH
 ENV PATH="/app/.venv/bin:$PATH"
 
-# Expose port
+# Expose port (Railway and similar platforms may override this with $PORT)
 EXPOSE 8000
+
+# Set default port (can be overridden by Railway's $PORT env var)
+ENV PORT=8000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"
+    CMD python -c "import os, urllib.request; urllib.request.urlopen(f'http://localhost:{os.getenv(\"PORT\", \"8000\")}/health')"
 
-# Run the application
-CMD ["uvicorn", "app.api:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run the application (Railway will set $PORT automatically)
+CMD uvicorn app.api:app --host 0.0.0.0 --port $PORT
 
