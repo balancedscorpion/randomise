@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import './App.css'
-import InputPanel from './components/InputPanel'
+import InputBar from './components/InputBar'
 import PipelineVisualizer from './components/PipelineVisualizer'
 import BucketVisualization from './components/BucketVisualization'
 import ResultCard from './components/ResultCard'
@@ -11,7 +11,7 @@ function App() {
     userid: 'user123',
     seed: 'homepage-experiment',
     weights: [0.5, 0.5],
-    algorithm: 'md5',
+    algorithm: 'xxhash',
     distribution: 'mad',
   })
 
@@ -58,59 +58,62 @@ function App() {
     setConfig(newConfig)
   }, [])
 
+  // Allow pipeline to update config (for inline editing)
+  const handlePipelineEdit = useCallback((field, value) => {
+    const newConfig = { ...config, [field]: value }
+    setConfig(newConfig)
+    // Auto-run after edit
+    runRandomisation(newConfig)
+  }, [config, runRandomisation])
+
   return (
     <div className="app">
       <header className="app-header">
         <div className="header-content">
-          <h1>Randomisation Visualizer</h1>
+          <h1 className="gradient-text">Randomisation Visualizer</h1>
           <p className="subtitle">
             Explore how deterministic A/B testing assignment works step by step
           </p>
         </div>
       </header>
 
+      <InputBar
+        config={config}
+        onChange={handleConfigChange}
+        onRandomise={runRandomisation}
+        loading={loading}
+      />
+
       <main className="app-main">
-        <div className="main-grid">
-          <aside className="sidebar">
-            <InputPanel
-              config={config}
-              onChange={handleConfigChange}
-              onRandomise={runRandomisation}
-              loading={loading}
+        {error && (
+          <div className="error-banner">
+            <span className="error-icon">⚠</span>
+            <span>{error}</span>
+          </div>
+        )}
+
+        <PipelineVisualizer
+          config={config}
+          result={result}
+          loading={loading}
+          onEdit={handlePipelineEdit}
+        />
+
+        {result && (
+          <>
+            <BucketVisualization
+              weights={config.weights}
+              boundaries={result.boundaries}
+              tableSize={result.table_size}
+              tableIndex={result.table_index}
+              variant={result.variant}
             />
-          </aside>
 
-          <section className="content">
-            {error && (
-              <div className="error-banner">
-                <span className="error-icon">⚠</span>
-                <span>{error}</span>
-              </div>
-            )}
+            <ResultCard result={result} />
+          </>
+        )}
 
-            <PipelineVisualizer
-              config={config}
-              result={result}
-              loading={loading}
-            />
-
-            {result && (
-              <>
-                <BucketVisualization
-                  weights={config.weights}
-                  boundaries={result.boundaries}
-                  tableSize={result.table_size}
-                  tableIndex={result.table_index}
-                  variant={result.variant}
-                />
-
-                <ResultCard result={result} />
-              </>
-            )}
-
-            <BulkSimulator config={config} />
-          </section>
-        </div>
+        <BulkSimulator config={config} />
       </main>
 
       <footer className="app-footer">

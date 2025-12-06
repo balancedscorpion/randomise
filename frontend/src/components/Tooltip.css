@@ -1,0 +1,47 @@
+.tooltip-trigger {
+  display: inline-flex;
+  cursor: help;
+}
+
+.tooltip {
+  position: fixed;
+  z-index: 1000;
+  transform: translateX(-50%);
+  padding: 8px 12px;
+  background: var(--text-primary);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: white;
+  max-width: 260px;
+  line-height: 1.5;
+  pointer-events: none;
+  box-shadow: var(--shadow-lg);
+}
+
+.tooltip-top {
+  transform: translateX(-50%) translateY(-100%);
+}
+
+.tooltip-bottom {
+  transform: translateX(-50%);
+}
+
+.tooltip-arrow {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+}
+
+.tooltip-top .tooltip-arrow {
+  bottom: -6px;
+  border-top: 6px solid var(--text-primary);
+}
+
+.tooltip-bottom .tooltip-arrow {
+  top: -6px;
+  border-bottom: 6px solid var(--text-primary);
+}

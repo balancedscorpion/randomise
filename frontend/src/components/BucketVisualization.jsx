@@ -7,11 +7,11 @@ function BucketVisualization({ weights, boundaries, tableSize, tableIndex, varia
   const markerPosition = (tableIndex / tableSize) * 100
 
   return (
-    <div className="bucket-visualization">
+    <div className="bucket-visualization glass-card">
       <div className="bucket-header">
         <h3>Variant Distribution</h3>
         <p>
-          Index <code>{tableIndex}</code> falls in Variant {variant} 
+          Index <code>{tableIndex.toLocaleString()}</code> falls in Variant {variant} 
           ({VARIANT_LABELS[variant] || `Variant ${variant}`})
         </p>
       </div>
@@ -20,10 +20,10 @@ function BucketVisualization({ weights, boundaries, tableSize, tableIndex, varia
         {/* Scale markers */}
         <div className="scale-markers">
           <span>0</span>
-          <span>{Math.round(tableSize / 4)}</span>
-          <span>{Math.round(tableSize / 2)}</span>
-          <span>{Math.round((tableSize * 3) / 4)}</span>
-          <span>{tableSize}</span>
+          <span>{Math.round(tableSize / 4).toLocaleString()}</span>
+          <span>{Math.round(tableSize / 2).toLocaleString()}</span>
+          <span>{Math.round((tableSize * 3) / 4).toLocaleString()}</span>
+          <span>{tableSize.toLocaleString()}</span>
         </div>
 
         {/* Bucket bar */}
@@ -54,12 +54,12 @@ function BucketVisualization({ weights, boundaries, tableSize, tableIndex, varia
             style={{ '--marker-position': `${markerPosition}%` }}
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.5 }}
+            transition={{ duration: 0.4, delay: 0.5, type: 'spring' }}
           >
             <div className="marker-line" />
             <div className="marker-dot" />
             <div className="marker-label">
-              <span className="marker-index">{tableIndex}</span>
+              <span className="marker-index">{tableIndex.toLocaleString()}</span>
             </div>
           </motion.div>
         </div>
@@ -73,7 +73,7 @@ function BucketVisualization({ weights, boundaries, tableSize, tableIndex, varia
               style={{ '--boundary-position': `${(boundary / tableSize) * 100}%` }}
             >
               <div className="boundary-line" />
-              <span className="boundary-value">{boundary}</span>
+              <span className="boundary-value">{boundary.toLocaleString()}</span>
             </div>
           ))}
         </div>
@@ -82,9 +82,12 @@ function BucketVisualization({ weights, boundaries, tableSize, tableIndex, varia
       {/* Legend */}
       <div className="bucket-legend">
         {weights.map((weight, index) => (
-          <div
+          <motion.div
             key={index}
             className={`legend-item ${variant === index ? 'active' : ''}`}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 + index * 0.1 }}
           >
             <span
               className="legend-color"
@@ -94,9 +97,9 @@ function BucketVisualization({ weights, boundaries, tableSize, tableIndex, varia
               V{index}: {VARIANT_LABELS[index] || `Variant ${index}`}
             </span>
             <span className="legend-range">
-              {index === 0 ? 0 : boundaries[index - 1]} – {boundaries[index] - 1}
+              {index === 0 ? '0' : boundaries[index - 1].toLocaleString()} – {(boundaries[index] - 1).toLocaleString()}
             </span>
-          </div>
+          </motion.div>
         ))}
       </div>
     </div>
@@ -104,4 +107,3 @@ function BucketVisualization({ weights, boundaries, tableSize, tableIndex, varia
 }
 
 export default BucketVisualization
-

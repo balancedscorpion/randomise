@@ -11,21 +11,20 @@ echo "Python version: $(python --version)"
 echo "PWD: $(pwd)"
 echo ""
 
-# Build frontend if npm is available and frontend directory exists
-if [ -d "frontend" ]; then
+# Build frontend only if source exists and dist doesn't (or npm is available for dev)
+if [ -d "frontend/src" ] && command -v npm >/dev/null 2>&1; then
     echo "Building frontend..."
-    if command -v npm >/dev/null 2>&1; then
-        cd frontend
-        if [ ! -d "node_modules" ]; then
-            echo "Installing frontend dependencies..."
-            npm install --silent
-        fi
-        npm run build --silent
-        cd ..
-        echo "✓ Frontend built successfully"
-    else
-        echo "⚠ npm not found, skipping frontend build"
+    cd frontend
+    if [ ! -d "node_modules" ]; then
+        echo "Installing frontend dependencies..."
+        npm install --silent
     fi
+    npm run build --silent
+    cd ..
+    echo "✓ Frontend built successfully"
+    echo ""
+elif [ -d "frontend/dist" ]; then
+    echo "✓ Frontend already built"
     echo ""
 fi
 
@@ -39,12 +38,9 @@ echo ""
 echo "Checking app module..."
 python -c "from app.api import app; print('✓ App imports successfully')" || {
     echo "✗ Failed to import app"
-    echo "Attempting detailed import..."
-    python -c "import app.randomise; import app.utils; import app.api" 2>&1
     exit 1
 }
 echo ""
 
 echo "Starting Uvicorn..."
 exec uvicorn app.api:app --host 0.0.0.0 --port "${PORT:-8000}" --log-level info
-

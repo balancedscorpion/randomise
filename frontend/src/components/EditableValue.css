@@ -1,0 +1,163 @@
+.editable-value {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+}
+
+.value-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--value-color, var(--text-muted));
+}
+
+.value-display {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: var(--value-bg, var(--bg-tertiary));
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: default;
+  transition: all var(--transition-fast);
+}
+
+.is-editable .value-display {
+  cursor: pointer;
+}
+
+.is-editable .value-display:hover {
+  border-color: var(--value-color, var(--border-medium));
+  background: var(--bg-secondary);
+}
+
+.value-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--value-color, var(--text-primary));
+}
+
+.edit-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.is-editable .value-display:hover .edit-hint {
+  opacity: 1;
+}
+
+/* Edit mode */
+.edit-container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.value-input {
+  padding: 6px 10px;
+  background: var(--bg-primary);
+  border: 2px solid var(--value-color, var(--accent-primary));
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  min-width: 120px;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.value-input:focus {
+  outline: none;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.action-btn {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.action-btn.confirm {
+  background: var(--variant-0);
+  color: white;
+}
+
+.action-btn.confirm:hover {
+  filter: brightness(1.1);
+}
+
+.action-btn.cancel {
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
+}
+
+.action-btn.cancel:hover {
+  background: var(--border-light);
+  color: var(--text-secondary);
+}
+
+/* Select type */
+.select-value .value-select {
+  padding: 6px 28px 6px 10px;
+  background: var(--value-bg, var(--bg-tertiary));
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  color: var(--value-color, var(--text-primary));
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%2394A3B8' d='M5 7L1 3h8z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  transition: all var(--transition-fast);
+}
+
+.select-value .value-select:hover {
+  border-color: var(--value-color, var(--border-medium));
+}
+
+.select-value .value-select:focus {
+  outline: none;
+  border-color: var(--value-color, var(--accent-primary));
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Tooltip */
+.value-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 12px;
+  background: var(--text-primary);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  color: white;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all var(--transition-fast);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.editable-value:hover .value-tooltip {
+  opacity: 1;
+  visibility: visible;
+}
