@@ -25,4 +25,4 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-randomisation = "app.main:main"
+randomisation-api = "uvicorn:main"

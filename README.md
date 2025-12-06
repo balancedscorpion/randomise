@@ -191,8 +191,8 @@ randomiser = Randomiser(
     seed="my-experiment-seed",
     proportions=[0.5, 0.5],
     table_size=100,
-    hash_algorithm=HashAlgorithm.MD5,
-    distribution_method=DistributionMethod.MODULUS
+    algorithm=HashAlgorithm.MD5,
+    distribution=DistributionMethod.MODULUS
 )
 
 # Assign a user to a bucket
@@ -204,7 +204,7 @@ print(f"User {user_id} assigned to bucket {bucket}")  # Always deterministic!
 #### Simple Function API
 
 ```python
-from app.utils import randomise
+from app.randomise import randomise
 
 # One-liner for quick randomisation (uses optimized defaults)
 bucket = randomise(
@@ -220,10 +220,10 @@ bucket = randomise(
 poetry run randomisation
 ```
 
-Or run directly:
+Or run the API directly:
 
 ```bash
-python -m app.main
+python -m app.api
 ```
 
 ## Architecture
@@ -291,8 +291,8 @@ randomiser = Randomiser(
     seed="experiment-v2",
     proportions=[0.5, 0.3, 0.2],
     table_size=1000,
-    hash_algorithm=HashAlgorithm.SHA256,
-    distribution_method=DistributionMethod.MAD
+    algorithm=HashAlgorithm.SHA256,
+    distribution=DistributionMethod.MAD
 )
 
 # Get detailed information
@@ -466,11 +466,9 @@ Deterministic assignment is crucial for:
 
 ```
 ├── app/
-│   ├── __init__.py
+│   ├── __init__.py            # Package exports
 │   ├── api.py                 # FastAPI web service
-│   ├── main.py                # Demo application
-│   ├── randomise.py           # Core randomisation system
-│   └── utils.py               # Simple utility functions
+│   └── randomise.py           # Core randomisation system
 ├── ab_testing_tutorial.ipynb # Comprehensive tutorial with benchmarks
 ├── Demo_Usage.ipynb           # Quick usage examples
 ├── Dockerfile                 # Production-ready Docker image
