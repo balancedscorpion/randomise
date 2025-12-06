@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { motion } from 'motion/react'
 import './BucketVisualization.css'
 
@@ -5,6 +6,7 @@ const VARIANT_LABELS = ['Control', 'Treatment A', 'Treatment B', 'Treatment C', 
 
 function BucketVisualization({ weights, boundaries, tableSize, tableIndex, variant }) {
   const markerPosition = (tableIndex / tableSize) * 100
+  const [hoveredSegment, setHoveredSegment] = useState(null)
 
   return (
     <div className="bucket-visualization glass-card">
@@ -31,7 +33,7 @@ function BucketVisualization({ weights, boundaries, tableSize, tableIndex, varia
           {weights.map((weight, index) => (
             <motion.div
               key={index}
-              className={`bucket-segment ${variant === index ? 'active' : ''}`}
+              className={`bucket-segment ${variant === index ? 'active' : ''} ${hoveredSegment === index ? 'hovered' : ''}`}
               style={{
                 '--segment-width': `${weight * 100}%`,
                 '--segment-color': `var(--variant-${index % 6})`,
@@ -39,12 +41,23 @@ function BucketVisualization({ weights, boundaries, tableSize, tableIndex, varia
               initial={{ scaleX: 0 }}
               animate={{ scaleX: 1 }}
               transition={{ duration: 0.4, delay: index * 0.1 }}
+              onMouseEnter={() => setHoveredSegment(index)}
+              onMouseLeave={() => setHoveredSegment(null)}
             >
               <div className="segment-fill" />
               <span className="segment-label">
                 V{index}
                 <span className="segment-percent">{(weight * 100).toFixed(0)}%</span>
               </span>
+              
+              {/* Hover tooltip with range info */}
+              {hoveredSegment === index && (
+                <div className="segment-tooltip">
+                  <strong>{VARIANT_LABELS[index] || `Variant ${index}`}</strong>
+                  <span>Range: {index === 0 ? '0' : boundaries[index - 1].toLocaleString()} – {(boundaries[index] - 1).toLocaleString()}</span>
+                  <span>Weight: {(weight * 100).toFixed(1)}%</span>
+                </div>
+              )}
             </motion.div>
           ))}
 
@@ -72,7 +85,6 @@ function BucketVisualization({ weights, boundaries, tableSize, tableIndex, varia
               className="boundary-marker"
               style={{ '--boundary-position': `${(boundary / tableSize) * 100}%` }}
             >
-              <div className="boundary-line" />
               <span className="boundary-value">{boundary.toLocaleString()}</span>
             </div>
           ))}

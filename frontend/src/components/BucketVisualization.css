@@ -23,7 +23,7 @@
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 13px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   color: var(--accent-primary);
 }
 
@@ -31,6 +31,8 @@
 .bucket-container {
   position: relative;
   margin-bottom: 20px;
+  overflow: visible;
+  padding-bottom: 24px;
 }
 
 /* Scale markers */
@@ -43,7 +45,7 @@
 
 .scale-markers span {
   font-size: 10px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   color: var(--text-muted);
 }
 
@@ -109,6 +111,56 @@
   margin-top: 2px;
 }
 
+/* Hover state */
+.bucket-segment {
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+
+.bucket-segment.hovered .segment-fill {
+  opacity: 0.4;
+}
+
+/* Segment tooltip */
+.segment-tooltip {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 14px;
+  background: var(--text-primary);
+  border-radius: var(--radius-sm);
+  color: white;
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  white-space: nowrap;
+  z-index: 20;
+  box-shadow: var(--shadow-lg);
+  pointer-events: none;
+}
+
+.segment-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid var(--text-primary);
+}
+
+.segment-tooltip strong {
+  font-weight: 600;
+}
+
+.segment-tooltip span {
+  color: rgba(255, 255, 255, 0.8);
+  font-family: var(--font-mono);
+}
+
 /* Marker */
 .bucket-marker {
   position: absolute;
@@ -152,7 +204,7 @@
   padding: 4px 10px;
   border-radius: 4px;
   font-size: 11px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-weight: 500;
   white-space: nowrap;
   box-shadow: var(--shadow-sm);
@@ -172,33 +224,30 @@
 /* Boundaries */
 .boundaries {
   position: relative;
-  height: 0;
+  height: 24px;
+  margin-top: 8px;
 }
 
 .boundary-marker {
   position: absolute;
   left: var(--boundary-position);
   top: 0;
+  transform: translateX(-50%);
 }
 
 .boundary-line {
-  position: absolute;
-  left: -1px;
-  top: -60px;
-  width: 2px;
-  height: 52px;
-  background: var(--border-medium);
+  display: none;
 }
 
 .boundary-value {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  top: 4px;
   font-size: 10px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   color: var(--text-muted);
   white-space: nowrap;
+  background: var(--bg-secondary);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--border-light);
 }
 
 /* Legend */
@@ -242,7 +291,7 @@
 
 .legend-range {
   font-size: 11px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   color: var(--text-muted);
   margin-left: 4px;
 }

@@ -6,6 +6,80 @@ import './BulkSimulator.css'
 const PRESET_SIZES = [100, 1000, 10000, 100000]
 const MAX_SAMPLE_SIZE = 10000000 // 10 million
 
+// Approximation of chi-squared CDF (upper tail probability / p-value)
+function chiSquaredPValue(x, k) {
+  if (x <= 0) return 1
+  if (k <= 0) return 0
+  
+  // For large k, use normal approximation
+  if (k > 30) {
+    const z = Math.pow(x / k, 1/3) - (1 - 2 / (9 * k))
+    const s = Math.sqrt(2 / (9 * k))
+    const normal = 0.5 * (1 + erf(z / (s * Math.sqrt(2))))
+    return 1 - normal
+  }
+  
+  // Gamma function approximation for small k
+  const gammaCDF = (x, k) => {
+    if (x <= 0) return 0
+    const a = k / 2
+    const z = x / 2
+    
+    let sum = 0
+    let term = Math.exp(-z) * Math.pow(z, a) / gamma(a + 1)
+    sum = term
+    
+    for (let n = 1; n < 100; n++) {
+      term *= z / (a + n)
+      sum += term
+      if (Math.abs(term) < 1e-10) break
+    }
+    
+    return sum
+  }
+  
+  return 1 - gammaCDF(x, k)
+}
+
+// Error function approximation
+function erf(x) {
+  const t = 1 / (1 + 0.5 * Math.abs(x))
+  const tau = t * Math.exp(-x * x - 1.26551223 +
+    t * (1.00002368 +
+    t * (0.37409196 +
+    t * (0.09678418 +
+    t * (-0.18628806 +
+    t * (0.27886807 +
+    t * (-1.13520398 +
+    t * (1.48851587 +
+    t * (-0.82215223 +
+    t * 0.17087277)))))))))
+  
+  return x >= 0 ? 1 - tau : tau - 1
+}
+
+// Gamma function approximation (Stirling)
+function gamma(n) {
+  if (n === 1) return 1
+  if (n === 0.5) return Math.sqrt(Math.PI)
+  if (n < 0.5) {
+    return Math.PI / (Math.sin(Math.PI * n) * gamma(1 - n))
+  }
+  n -= 1
+  const g = 7
+  const c = [0.99999999999980993, 676.5203681218851, -1259.1392167224028,
+    771.32342877765313, -176.61502916214059, 12.507343278686905,
+    -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7]
+  
+  let x = c[0]
+  for (let i = 1; i < g + 2; i++) {
+    x += c[i] / (n + i)
+  }
+  
+  const t = n + g + 0.5
+  return Math.sqrt(2 * Math.PI) * Math.pow(t, n + 0.5) * Math.exp(-t) * x
+}
+
 function BulkSimulator({ config }) {
   const [results, setResults] = useState(null)
   const [rawResults, setRawResults] = useState([])
@@ -113,10 +187,27 @@ function BulkSimulator({ config }) {
         deviation: Math.abs(count / total - config.weights[index]),
       }))
 
+      // Calculate chi-squared statistic
+      const chiSquared = distributions.reduce((sum, dist) => {
+        const expected = total * dist.expected
+        if (expected === 0) return sum
+        return sum + Math.pow(dist.count - expected, 2) / expected
+      }, 0)
+      
+      // Degrees of freedom = number of variants - 1
+      const degreesOfFreedom = distributions.length - 1
+      
+      // Simplified p-value approximation (for large samples)
+      // Using chi-squared distribution approximation
+      const pValue = chiSquaredPValue(chiSquared, degreesOfFreedom)
+
       setResults({
         distributions,
         total,
         timestamp: new Date().toLocaleTimeString(),
+        chiSquared,
+        degreesOfFreedom,
+        pValue,
       })
     } catch (err) {
       setError(err.message)
@@ -136,8 +227,11 @@ function BulkSimulator({ config }) {
     <div className="bulk-simulator glass-card">
       <div className="simulator-header">
         <div className="header-text">
-          <h3>Distribution Simulator</h3>
+          <h3>🔬 Distribution Simulator</h3>
           <p>Test the uniformity of assignments across many users</p>
+          <div className="header-tip">
+            Run simulations to verify your randomisation produces the expected distribution
+          </div>
         </div>
 
         <div className="simulator-controls">
@@ -288,9 +382,34 @@ function BulkSimulator({ config }) {
                   ))}
                 </div>
 
+                {/* Statistical significance */}
+                <div className="stats-significance">
+                  <div className="stat-box">
+                    <span className="stat-label">Chi-Squared (χ²)</span>
+                    <span className="stat-value">{results.chiSquared.toFixed(4)}</span>
+                  </div>
+                  <div className="stat-box">
+                    <span className="stat-label">Degrees of Freedom</span>
+                    <span className="stat-value">{results.degreesOfFreedom}</span>
+                  </div>
+                  <div className={`stat-box ${results.pValue > 0.05 ? 'good' : 'warn'}`}>
+                    <span className="stat-label">p-value</span>
+                    <span className="stat-value">{results.pValue < 0.001 ? '<0.001' : results.pValue.toFixed(4)}</span>
+                  </div>
+                  <div className={`stat-box verdict ${results.pValue > 0.05 ? 'good' : 'warn'}`}>
+                    <span className="stat-label">Verdict</span>
+                    <span className="stat-value">{results.pValue > 0.05 ? '✓ Uniform' : '⚠ Skewed'}</span>
+                  </div>
+                </div>
+
                 <div className="results-footer">
                   <span className="footer-note">
                     Total time: <strong>{timing.totalTime.toFixed(0)}ms</strong> ({(timing.totalTime / 1000).toFixed(2)}s) for {results.total.toLocaleString()} users
+                  </span>
+                  <span className="footer-note significance-note">
+                    {results.pValue > 0.05 
+                      ? 'Distribution matches expected weights (p > 0.05)'
+                      : 'Distribution differs from expected weights (p ≤ 0.05)'}
                   </span>
                 </div>
               </>

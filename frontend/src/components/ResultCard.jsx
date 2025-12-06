@@ -1,9 +1,19 @@
-import { motion } from 'motion/react'
+import { useState, useCallback } from 'react'
+import { motion, AnimatePresence } from 'motion/react'
 import './ResultCard.css'
 
 const VARIANT_LABELS = ['Control', 'Treatment A', 'Treatment B', 'Treatment C', 'Treatment D', 'Treatment E']
 
 function ResultCard({ result }) {
+  const [showJson, setShowJson] = useState(false)
+  const [copied, setCopied] = useState(false)
+
+  const copyToClipboard = useCallback(() => {
+    navigator.clipboard.writeText(JSON.stringify(result, null, 2))
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }, [result])
+
   if (!result) return null
 
   return (
@@ -63,6 +73,37 @@ function ResultCard({ result }) {
           <span className="detail-label">Weights</span>
           <code className="detail-value">{result.weights.map(w => `${(w * 100).toFixed(0)}%`).join(' / ')}</code>
         </div>
+      </div>
+
+      <div className="result-debug">
+        <div className="debug-header">
+          <button 
+            className="debug-toggle"
+            onClick={() => setShowJson(!showJson)}
+          >
+            {showJson ? '▼' : '▶'} Raw JSON Response
+          </button>
+          <button 
+            className="copy-btn"
+            onClick={copyToClipboard}
+          >
+            {copied ? '✓ Copied!' : '📋 Copy JSON'}
+          </button>
+        </div>
+        
+        <AnimatePresence>
+          {showJson && (
+            <motion.pre 
+              className="json-display"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <code>{JSON.stringify(result, null, 2)}</code>
+            </motion.pre>
+          )}
+        </AnimatePresence>
       </div>
 
       <motion.div 

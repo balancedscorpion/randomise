@@ -50,6 +50,7 @@
 /* Stage */
 .pipeline-stage {
   flex: 1;
+  min-width: 200px;
   background: var(--bg-secondary);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-md);
@@ -130,6 +131,58 @@
   padding-bottom: 8px;
 }
 
+/* Value display groups (read-only) */
+.value-display-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.value-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+.value-label.seed-label {
+  color: var(--color-seed);
+}
+
+.value-label.userid-label {
+  color: var(--color-userid);
+}
+
+.value-label.algorithm-label {
+  color: var(--color-algorithm);
+}
+
+.value-code {
+  display: inline-block;
+  padding: 6px 10px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.value-code.seed-value {
+  background: var(--color-seed-bg);
+  color: var(--color-seed);
+}
+
+.value-code.userid-value {
+  background: var(--color-userid-bg);
+  color: var(--color-userid);
+}
+
+.value-code.algorithm-value {
+  background: var(--color-algorithm-bg);
+  color: var(--color-algorithm);
+}
+
 /* Output displays */
 .combined-output,
 .hash-output,
@@ -150,10 +203,28 @@
 }
 
 .output-value {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 13px;
   color: var(--text-primary);
   word-break: break-all;
+}
+
+.combined-value {
+  display: inline;
+}
+
+.seed-inline {
+  color: var(--color-seed);
+  background: var(--color-seed-bg);
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+.userid-inline {
+  color: var(--color-userid);
+  background: var(--color-userid-bg);
+  padding: 1px 4px;
+  border-radius: 3px;
 }
 
 .hash-value {
@@ -185,28 +256,67 @@
 }
 
 .formula-display {
-  padding: 10px 12px;
+  padding: 12px 14px;
   background: var(--bg-tertiary);
   border-radius: var(--radius-sm);
   border: 1px dashed var(--border-medium);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.formula-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.formula-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
 }
 
 .formula-display code {
   display: block;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 12px;
   color: var(--accent-primary);
-  margin-bottom: 8px;
 }
 
-.formula-values {
+.formula-constants {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
   font-size: 11px;
   color: var(--text-muted);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
+  padding: 8px 10px;
+  background: var(--bg-secondary);
+  border-radius: 4px;
+}
+
+.formula-calculation {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-light);
+}
+
+.formula-with-numbers {
+  font-size: 11px;
+  color: var(--text-secondary);
+  word-break: break-all;
+}
+
+.formula-result {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-hash);
 }
 
 /* Index display */
@@ -224,7 +334,7 @@
 .table-size {
   font-size: 12px;
   color: var(--text-muted);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
 }
 
 /* Boundaries */
@@ -232,12 +342,14 @@
   padding: 10px 12px;
   background: var(--bg-tertiary);
   border-radius: var(--radius-sm);
+  overflow: hidden;
 }
 
 .boundaries-list {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+  overflow: hidden;
 }
 
 .boundary-value {
@@ -246,9 +358,11 @@
   border: 1px solid var(--border-light);
   border-radius: 4px;
   font-size: 11px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   color: var(--text-secondary);
   transition: all var(--transition-fast);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .boundary-value.active {
@@ -257,19 +371,31 @@
   color: white;
 }
 
-/* Variant output */
-.variant-output {
-  margin-top: 8px;
+/* Variant result */
+.variant-result {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-light);
 }
 
-.variant-badge {
-  display: inline-flex;
-  padding: 8px 16px;
-  background: var(--variant-color);
-  border-radius: var(--radius-sm);
-  font-size: 14px;
+.variant-result-label {
+  display: block;
+  font-size: 10px;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.variant-result-badge {
+  display: table;
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  font-weight: 700;
   color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 /* Connectors */
@@ -292,42 +418,6 @@
 
 .connector.active .connector-line {
   background: var(--accent-primary);
-}
-
-.connector-data {
-  position: relative;
-  z-index: 1;
-  background: var(--bg-secondary);
-  padding: 0 4px;
-}
-
-.data-flow {
-  font-size: 16px;
-  color: var(--text-muted);
-}
-
-.connector.active .data-flow {
-  color: var(--accent-primary);
-}
-
-/* Hash flow connector */
-.hash-connector .connector-data {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-}
-
-.flow-value {
-  font-size: 9px;
-  font-family: 'JetBrains Mono', monospace;
-  color: var(--color-hash);
-  white-space: nowrap;
-}
-
-.flow-arrow {
-  font-size: 14px;
-  color: var(--accent-primary);
 }
 
 /* Loading state */
@@ -374,18 +464,19 @@
 /* Responsive */
 @media (max-width: 1000px) {
   .pipeline-flow {
-    flex-direction: column;
-    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .pipeline-stage {
+    min-width: 220px;
+    flex-shrink: 0;
   }
 
   .connector {
-    width: 100%;
-    height: 28px;
-    transform: rotate(90deg);
-  }
-
-  .hash-connector .connector-data {
-    flex-direction: row;
+    min-width: 40px;
+    flex-shrink: 0;
   }
 }
 
@@ -407,5 +498,9 @@
   .operator {
     text-align: center;
     padding: 4px 0;
+  }
+
+  .pipeline-stage {
+    min-width: 200px;
   }
 }

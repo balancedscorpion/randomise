@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { motion } from 'motion/react'
+import { motion, AnimatePresence } from 'motion/react'
 import Tooltip from './Tooltip'
 import './InputBar.css'
 
@@ -25,6 +25,7 @@ const PRESET_WEIGHTS = [
 
 function InputBar({ config, onChange, onRandomise, loading }) {
   const [showWeightEditor, setShowWeightEditor] = useState(false)
+  const [showAdvanced, setShowAdvanced] = useState(false)
 
   const handleChange = useCallback((field, value) => {
     onChange({ ...config, [field]: value })
@@ -100,162 +101,8 @@ function InputBar({ config, onChange, onRandomise, loading }) {
   return (
     <div className="input-bar">
       <div className="input-bar-content">
-        {/* Primary Inputs Row */}
-        <div className="input-row primary-row">
-          <div className="input-field-group">
-            <Tooltip content="Unique identifier for the user being assigned to a variant. Same user + seed always produces the same result.">
-              <label className="field-label">
-                <span className="label-icon" style={{ background: 'var(--color-userid-bg)', color: 'var(--color-userid)' }}>ID</span>
-                User ID
-              </label>
-            </Tooltip>
-            <input
-              type="text"
-              value={config.userid}
-              onChange={(e) => handleChange('userid', e.target.value)}
-              placeholder="user123"
-              className="input-field userid-field"
-            />
-          </div>
-
-          <div className="input-field-group">
-            <Tooltip content="Experiment seed ensures different experiments produce independent assignments. Change the seed for each new test.">
-              <label className="field-label">
-                <span className="label-icon" style={{ background: 'var(--color-seed-bg)', color: 'var(--color-seed)' }}>S</span>
-                Seed
-              </label>
-            </Tooltip>
-            <input
-              type="text"
-              value={config.seed}
-              onChange={(e) => handleChange('seed', e.target.value)}
-              placeholder="experiment-name"
-              className="input-field seed-field"
-            />
-          </div>
-
-          <div className="input-field-group weights-group">
-            <Tooltip content="Distribution of traffic across variants. Must sum to 100%.">
-              <label className="field-label">Weights</label>
-            </Tooltip>
-            <div className="weight-selector">
-              <button 
-                className="weight-display"
-                onClick={() => setShowWeightEditor(!showWeightEditor)}
-              >
-                <span className="weight-value">{currentWeightsLabel}</span>
-                <span className="weight-arrow">{showWeightEditor ? '▲' : '▼'}</span>
-              </button>
-              
-              {showWeightEditor && (
-                <motion.div 
-                  className="weight-dropdown"
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                >
-                  <div className="weight-presets">
-                    <span className="preset-label">Presets</span>
-                    <div className="preset-buttons">
-                      {PRESET_WEIGHTS.map((preset) => (
-                        <button
-                          key={preset.label}
-                          className={`weight-option ${JSON.stringify(config.weights) === JSON.stringify(preset.weights) ? 'active' : ''}`}
-                          onClick={() => handleWeightPreset(preset.weights)}
-                        >
-                          {preset.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <div className="weight-editor">
-                    <span className="editor-label">Custom Weights</span>
-                    <div className="weight-rows">
-                      {config.weights.map((weight, index) => (
-                        <div key={index} className="weight-row">
-                          <span 
-                            className="variant-badge"
-                            style={{ background: `var(--variant-${index % 6})` }}
-                          >
-                            V{index}
-                          </span>
-                          <input
-                            type="number"
-                            min="0"
-                            max="1"
-                            step="0.01"
-                            value={weight}
-                            onChange={(e) => handleWeightChange(index, e.target.value)}
-                            className="weight-input"
-                          />
-                          <span className="weight-percent">{(weight * 100).toFixed(1)}%</span>
-                          {config.weights.length > 2 && (
-                            <button
-                              className="remove-variant-btn"
-                              onClick={() => removeVariant(index)}
-                              title="Remove variant"
-                            >
-                              ×
-                            </button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                    
-                    <button className="add-variant-btn" onClick={addVariant}>
-                      + Add Variant
-                    </button>
-                    
-                    <div className={`weight-sum ${isValidWeights ? 'valid' : 'invalid'}`}>
-                      Sum: {(weightsSum * 100).toFixed(1)}%
-                      {!isValidWeights && <span> (must equal 100%)</span>}
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Secondary Inputs Row */}
-        <div className="input-row secondary-row">
-          <div className="input-field-group">
-            <Tooltip content="Hash algorithm transforms the input into a deterministic integer. Different algorithms have different speed/distribution tradeoffs.">
-              <label className="field-label">
-                <span className="label-icon" style={{ background: 'var(--color-algorithm-bg)', color: 'var(--color-algorithm)' }}>#</span>
-                Algorithm
-              </label>
-            </Tooltip>
-            <select
-              value={config.algorithm}
-              onChange={(e) => handleChange('algorithm', e.target.value)}
-              className="select-field"
-            >
-              {ALGORITHMS.map((algo) => (
-                <option key={algo.value} value={algo.value}>
-                  {algo.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="input-field-group">
-            <Tooltip content="Distribution method maps the hash to a table index. MAD provides better distribution properties than simple modulus.">
-              <label className="field-label">Distribution</label>
-            </Tooltip>
-            <div className="toggle-buttons">
-              {DISTRIBUTIONS.map((dist) => (
-                <button
-                  key={dist.value}
-                  className={`toggle-btn ${config.distribution === dist.value ? 'active' : ''}`}
-                  onClick={() => handleChange('distribution', dist.value)}
-                >
-                  {dist.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
+        <div className="config-header">
+          <h2 className="config-title">Experiment Configuration</h2>
           <motion.button
             className="run-button"
             onClick={() => onRandomise()}
@@ -272,6 +119,169 @@ function InputBar({ config, onChange, onRandomise, loading }) {
               </>
             )}
           </motion.button>
+        </div>
+
+        <div className="config-grid">
+          {/* User & Experiment Section */}
+          <div className="config-section">
+            <h3 className="section-title">User & Experiment</h3>
+            <div className="section-fields">
+              <div className="input-field-group">
+                <Tooltip content="Unique identifier for the user being assigned to a variant. Same user + seed always produces the same result.">
+                  <label className="field-label">
+                    <span className="label-icon" style={{ background: 'var(--color-userid-bg)', color: 'var(--color-userid)' }}>ID</span>
+                    User ID
+                  </label>
+                </Tooltip>
+                <input
+                  type="text"
+                  value={config.userid}
+                  onChange={(e) => handleChange('userid', e.target.value)}
+                  placeholder="user123"
+                  className="input-field userid-field"
+                />
+              </div>
+
+              <div className="input-field-group">
+                <Tooltip content="Experiment seed ensures different experiments produce independent assignments. Change the seed for each new test.">
+                  <label className="field-label">
+                    <span className="label-icon" style={{ background: 'var(--color-seed-bg)', color: 'var(--color-seed)' }}>S</span>
+                    Seed
+                  </label>
+                </Tooltip>
+                <input
+                  type="text"
+                  value={config.seed}
+                  onChange={(e) => handleChange('seed', e.target.value)}
+                  placeholder="experiment-name"
+                  className="input-field seed-field"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Weights Section */}
+          <div className="config-section">
+            <h3 className="section-title">Variant Weights</h3>
+            <div className="section-fields">
+              <div className="weight-presets-inline">
+                {PRESET_WEIGHTS.map((preset) => (
+                  <button
+                    key={preset.label}
+                    className={`weight-preset-btn ${JSON.stringify(config.weights) === JSON.stringify(preset.weights) ? 'active' : ''}`}
+                    onClick={() => handleWeightPreset(preset.weights)}
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
+              
+              <div className="weight-editor-inline">
+                {config.weights.map((weight, index) => (
+                  <div key={index} className="weight-item">
+                    <span 
+                      className="variant-badge"
+                      style={{ background: `var(--variant-${index % 6})` }}
+                    >
+                      V{index}
+                    </span>
+                    <input
+                      type="number"
+                      min="0"
+                      max="1"
+                      step="0.01"
+                      value={weight}
+                      onChange={(e) => handleWeightChange(index, e.target.value)}
+                      className="weight-input"
+                    />
+                    <span className="weight-percent">{(weight * 100).toFixed(0)}%</span>
+                    {config.weights.length > 2 && (
+                      <button
+                        className="remove-variant-btn"
+                        onClick={() => removeVariant(index)}
+                        title="Remove variant"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <button className="add-variant-btn" onClick={addVariant}>
+                  + Add
+                </button>
+              </div>
+
+              <div className={`weight-sum ${isValidWeights ? 'valid' : 'invalid'}`}>
+                Total: {(weightsSum * 100).toFixed(0)}%
+                {!isValidWeights && <span> (must be 100%)</span>}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Advanced Settings Accordion */}
+        <div className="advanced-section">
+          <button 
+            className="advanced-toggle"
+            onClick={() => setShowAdvanced(!showAdvanced)}
+          >
+            <span className="advanced-icon">{showAdvanced ? '▼' : '▶'}</span>
+            <span>Advanced Settings</span>
+            <span className="advanced-summary">
+              {ALGORITHMS.find(a => a.value === config.algorithm)?.label} · {DISTRIBUTIONS.find(d => d.value === config.distribution)?.label}
+            </span>
+          </button>
+
+          <AnimatePresence>
+            {showAdvanced && (
+              <motion.div 
+                className="advanced-content"
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="advanced-fields">
+                  <div className="input-field-group">
+                    <Tooltip content="Hash algorithm transforms the input into a deterministic integer. Different algorithms have different speed/distribution tradeoffs.">
+                      <label className="field-label">
+                        <span className="label-icon" style={{ background: 'var(--color-algorithm-bg)', color: 'var(--color-algorithm)' }}>#</span>
+                        Algorithm
+                      </label>
+                    </Tooltip>
+                    <select
+                      value={config.algorithm}
+                      onChange={(e) => handleChange('algorithm', e.target.value)}
+                      className="select-field"
+                    >
+                      {ALGORITHMS.map((algo) => (
+                        <option key={algo.value} value={algo.value}>
+                          {algo.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="input-field-group">
+                    <Tooltip content="Distribution method maps the hash to a table index. MAD provides better distribution properties than simple modulus.">
+                      <label className="field-label">Distribution</label>
+                    </Tooltip>
+                    <div className="toggle-buttons">
+                      {DISTRIBUTIONS.map((dist) => (
+                        <button
+                          key={dist.value}
+                          className={`toggle-btn ${config.distribution === dist.value ? 'active' : ''}`}
+                          onClick={() => handleChange('distribution', dist.value)}
+                        >
+                          {dist.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </div>

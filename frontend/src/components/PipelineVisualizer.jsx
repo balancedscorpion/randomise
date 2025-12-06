@@ -1,28 +1,27 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import Tooltip from './Tooltip'
-import EditableValue from './EditableValue'
 import './PipelineVisualizer.css'
 
-const ALGORITHM_OPTIONS = [
-  { value: 'md5', label: 'MD5' },
-  { value: 'sha256', label: 'SHA-256' },
-  { value: 'murmur32', label: 'MurmurHash3' },
-  { value: 'xxhash', label: 'xxHash32' },
-  { value: 'xxh3', label: 'xxHash3' },
-]
+const ALGORITHM_LABELS = {
+  md5: 'MD5',
+  sha256: 'SHA-256',
+  murmur32: 'MurmurHash3',
+  xxhash: 'xxHash32',
+  xxh3: 'xxHash3',
+}
 
-const DISTRIBUTION_OPTIONS = [
-  { value: 'mad', label: 'MAD' },
-  { value: 'modulus', label: 'Modulus' },
-]
+const DISTRIBUTION_LABELS = {
+  mad: 'MAD',
+  modulus: 'Modulus',
+}
 
 // MAD constants for formula display
 const MAD_PRIME = 2147483647
 const MAD_A = 2654435761
 const MAD_B = 1103515245
 
-function PipelineVisualizer({ config, result, loading, onEdit }) {
+function PipelineVisualizer({ config, result, loading }) {
   const [activeStep, setActiveStep] = useState(-1)
   const [showFormula, setShowFormula] = useState(false)
 
@@ -40,8 +39,6 @@ function PipelineVisualizer({ config, result, loading, onEdit }) {
       setActiveStep(-1)
     }
   }, [result])
-
-  const combinedInput = `${config.seed}:${config.userid}`
 
   return (
     <div className="pipeline-visualizer glass-card">
@@ -82,25 +79,19 @@ function PipelineVisualizer({ config, result, loading, onEdit }) {
           <div className="stage-content">
             <div className="input-values">
               <Tooltip content="Experiment seed ensures different experiments produce independent assignments">
-                <EditableValue
-                  value={config.seed}
-                  onChange={(v) => onEdit('seed', v)}
-                  color="seed"
-                  label="Seed"
-                  editable={true}
-                />
+                <div className="value-display-group">
+                  <span className="value-label seed-label">Seed</span>
+                  <code className="value-code seed-value">{config.seed}</code>
+                </div>
               </Tooltip>
               
               <span className="operator">:</span>
               
               <Tooltip content="Unique identifier for the user being assigned">
-                <EditableValue
-                  value={config.userid}
-                  onChange={(v) => onEdit('userid', v)}
-                  color="userid"
-                  label="User ID"
-                  editable={true}
-                />
+                <div className="value-display-group">
+                  <span className="value-label userid-label">User ID</span>
+                  <code className="value-code userid-value">{config.userid}</code>
+                </div>
               </Tooltip>
             </div>
 
@@ -113,7 +104,9 @@ function PipelineVisualizer({ config, result, loading, onEdit }) {
                   exit={{ opacity: 0 }}
                 >
                   <span className="output-label">Combined string</span>
-                  <code className="output-value">"{combinedInput}"</code>
+                  <code className="output-value combined-value">
+                    "<span className="seed-inline">{config.seed}</span>:<span className="userid-inline">{config.userid}</span>"
+                  </code>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -128,13 +121,6 @@ function PipelineVisualizer({ config, result, loading, onEdit }) {
             animate={{ scaleX: activeStep >= 1 ? 1 : 0 }}
             transition={{ duration: 0.3 }}
           />
-          <motion.div 
-            className="connector-data"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: activeStep >= 1 ? 1 : 0 }}
-          >
-            <span className="data-flow">→</span>
-          </motion.div>
         </div>
 
         {/* Stage 2: Hash */}
@@ -154,14 +140,10 @@ function PipelineVisualizer({ config, result, loading, onEdit }) {
 
           <div className="stage-content">
             <Tooltip content="Hash algorithm transforms the input into a deterministic integer">
-              <EditableValue
-                value={config.algorithm}
-                onChange={(v) => onEdit('algorithm', v)}
-                type="select"
-                options={ALGORITHM_OPTIONS}
-                color="algorithm"
-                label="Algorithm"
-              />
+              <div className="value-display-group">
+                <span className="value-label algorithm-label">Algorithm</span>
+                <code className="value-code algorithm-value">{ALGORITHM_LABELS[config.algorithm] || config.algorithm}</code>
+              </div>
             </Tooltip>
 
             <AnimatePresence>
@@ -180,28 +162,14 @@ function PipelineVisualizer({ config, result, loading, onEdit }) {
           </div>
         </motion.div>
 
-        {/* Connector 2→3 with hash value flow */}
-        <div className={`connector hash-connector ${activeStep >= 2 ? 'active' : ''}`}>
+        {/* Connector 2→3 */}
+        <div className={`connector ${activeStep >= 2 ? 'active' : ''}`}>
           <motion.div 
             className="connector-line"
             initial={{ scaleX: 0 }}
             animate={{ scaleX: activeStep >= 2 ? 1 : 0 }}
             transition={{ duration: 0.3 }}
           />
-          <AnimatePresence>
-            {activeStep >= 2 && result && (
-              <motion.div 
-                className="connector-data hash-flow"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.4 }}
-              >
-                <span className="flow-value">{result.hash_value.toLocaleString()}</span>
-                <span className="flow-arrow">→</span>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
 
         {/* Stage 3: Distribute */}
@@ -222,13 +190,10 @@ function PipelineVisualizer({ config, result, loading, onEdit }) {
           <div className="stage-content">
             <div className="distribution-config">
               <Tooltip content="Distribution method maps the hash to a table index for even distribution">
-                <EditableValue
-                  value={config.distribution}
-                  onChange={(v) => onEdit('distribution', v)}
-                  type="select"
-                  options={DISTRIBUTION_OPTIONS}
-                  label="Method"
-                />
+                <div className="value-display-group">
+                  <span className="value-label">Method</span>
+                  <code className="value-code">{DISTRIBUTION_LABELS[config.distribution] || config.distribution}</code>
+                </div>
               </Tooltip>
               
               <button 
@@ -240,19 +205,51 @@ function PipelineVisualizer({ config, result, loading, onEdit }) {
             </div>
 
             <AnimatePresence>
-              {showFormula && config.distribution === 'mad' && (
+              {showFormula && (
                 <motion.div 
                   className="formula-display"
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
                 >
-                  <code>((a × hash + b) mod prime) mod table_size</code>
-                  <div className="formula-values">
-                    <span>a = {MAD_A.toLocaleString()}</span>
-                    <span>b = {MAD_B.toLocaleString()}</span>
-                    <span>prime = {MAD_PRIME.toLocaleString()}</span>
-                  </div>
+                  {config.distribution === 'mad' ? (
+                    <>
+                      <div className="formula-section">
+                        <span className="formula-label">Formula:</span>
+                        <code>((a × hash + b) mod prime) mod table_size</code>
+                      </div>
+                      <div className="formula-constants">
+                        <span>a = {MAD_A.toLocaleString()}</span>
+                        <span>b = {MAD_B.toLocaleString()}</span>
+                        <span>prime = {MAD_PRIME.toLocaleString()}</span>
+                      </div>
+                      {result && (
+                        <div className="formula-calculation">
+                          <span className="formula-label">Calculation:</span>
+                          <code className="formula-with-numbers">
+                            (({MAD_A.toLocaleString()} × {result.hash_value.toLocaleString()} + {MAD_B.toLocaleString()}) mod {MAD_PRIME.toLocaleString()}) mod {result.table_size.toLocaleString()}
+                          </code>
+                          <code className="formula-result">= {result.table_index.toLocaleString()}</code>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <div className="formula-section">
+                        <span className="formula-label">Formula:</span>
+                        <code>hash mod table_size</code>
+                      </div>
+                      {result && (
+                        <div className="formula-calculation">
+                          <span className="formula-label">Calculation:</span>
+                          <code className="formula-with-numbers">
+                            {result.hash_value.toLocaleString()} mod {result.table_size.toLocaleString()}
+                          </code>
+                          <code className="formula-result">= {result.table_index.toLocaleString()}</code>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -285,13 +282,6 @@ function PipelineVisualizer({ config, result, loading, onEdit }) {
             animate={{ scaleX: activeStep >= 3 ? 1 : 0 }}
             transition={{ duration: 0.3 }}
           />
-          <motion.div 
-            className="connector-data"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: activeStep >= 3 ? 1 : 0 }}
-          >
-            <span className="data-flow">→</span>
-          </motion.div>
         </div>
 
         {/* Stage 4: Assign */}
@@ -334,24 +324,17 @@ function PipelineVisualizer({ config, result, loading, onEdit }) {
               )}
             </AnimatePresence>
 
-            <AnimatePresence>
-              {activeStep >= 3 && result && (
-                <motion.div 
-                  className="variant-output"
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ type: 'spring', damping: 15 }}
+            {activeStep >= 3 && result && (
+              <div className="variant-result">
+                <span className="variant-result-label">Result</span>
+                <div 
+                  className="variant-result-badge"
+                  style={{ backgroundColor: `var(--variant-${result.variant % 6})` }}
                 >
-                  <span 
-                    className="variant-badge"
-                    style={{ '--variant-color': `var(--variant-${result.variant % 6})` }}
-                  >
-                    Variant {result.variant}
-                  </span>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                  Variant {result.variant}
+                </div>
+              </div>
+            )}
           </div>
         </motion.div>
       </div>

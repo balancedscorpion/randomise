@@ -35,7 +35,7 @@
 }
 
 .value-text {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 13px;
   color: var(--value-color, var(--text-primary));
 }
@@ -64,7 +64,7 @@
   border: 2px solid var(--value-color, var(--accent-primary));
   border-radius: var(--radius-sm);
   color: var(--text-primary);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 13px;
   min-width: 120px;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
@@ -118,7 +118,7 @@
   border: 1px solid var(--border-light);
   border-radius: var(--radius-sm);
   color: var(--value-color, var(--text-primary));
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 13px;
   cursor: pointer;
   appearance: none;
