@@ -11,6 +11,24 @@ echo "Python version: $(python --version)"
 echo "PWD: $(pwd)"
 echo ""
 
+# Build frontend if npm is available and frontend directory exists
+if [ -d "frontend" ]; then
+    echo "Building frontend..."
+    if command -v npm >/dev/null 2>&1; then
+        cd frontend
+        if [ ! -d "node_modules" ]; then
+            echo "Installing frontend dependencies..."
+            npm install --silent
+        fi
+        npm run build --silent
+        cd ..
+        echo "✓ Frontend built successfully"
+    else
+        echo "⚠ npm not found, skipping frontend build"
+    fi
+    echo ""
+fi
+
 echo "Checking Python modules..."
 python -c "import fastapi; print(f'✓ FastAPI {fastapi.__version__}')" || echo "✗ FastAPI not found"
 python -c "import uvicorn; print(f'✓ Uvicorn {uvicorn.__version__}')" || echo "✗ Uvicorn not found"

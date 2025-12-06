@@ -1,5 +1,25 @@
 # Multi-stage build for smaller final image
-FROM python:3.11-slim AS builder
+
+# Stage 1: Build frontend
+FROM node:20-slim AS frontend-builder
+
+WORKDIR /app/frontend
+
+# Copy frontend package files
+COPY frontend/package*.json ./
+
+# Install dependencies
+RUN npm ci --silent
+
+# Copy frontend source
+COPY frontend/ ./
+
+# Build frontend
+RUN npm run build
+
+
+# Stage 2: Build Python dependencies
+FROM python:3.11-slim AS python-builder
 
 WORKDIR /app
 
@@ -20,16 +40,19 @@ RUN poetry config virtualenvs.in-project true \
     && poetry install --only main --no-root --no-interaction --no-ansi
 
 
-# Final stage - smaller runtime image
+# Stage 3: Final runtime image
 FROM python:3.11-slim
 
 WORKDIR /app
 
 # Copy only the virtual environment from builder
-COPY --from=builder /app/.venv /app/.venv
+COPY --from=python-builder /app/.venv /app/.venv
 
 # Copy application code
 COPY app ./app
+
+# Copy built frontend
+COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
 
 # Copy startup script
 COPY start.sh ./start.sh

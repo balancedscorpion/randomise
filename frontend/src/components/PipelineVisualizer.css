@@ -1,0 +1,223 @@
+.pipeline-visualizer {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 24px;
+}
+
+.pipeline-header {
+  margin-bottom: 24px;
+}
+
+.pipeline-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.pipeline-header p {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* Pipeline stages */
+.pipeline-stages {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+}
+
+.stage-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+}
+
+.pipeline-stage {
+  flex: 1;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: all var(--transition-normal);
+  border: 2px solid transparent;
+}
+
+.pipeline-stage.active {
+  background: var(--bg-secondary);
+  border-color: var(--border-light);
+}
+
+.pipeline-stage.current {
+  border-color: var(--accent-primary);
+}
+
+.stage-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.stage-icon {
+  font-size: 20px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.pipeline-stage.active .stage-icon {
+  background: var(--accent-primary-light);
+}
+
+.stage-titles {
+  flex: 1;
+  min-width: 0;
+}
+
+.stage-titles h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.stage-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  display: block;
+}
+
+.stage-number {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--border-light);
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.stage-number.done {
+  background: var(--variant-0);
+  color: white;
+}
+
+/* Stage value */
+.stage-value {
+  background: var(--bg-primary);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  overflow-x: auto;
+}
+
+.stage-value code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--accent-primary);
+  word-break: break-all;
+  white-space: pre-wrap;
+}
+
+.stage-detail {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* Connector */
+.connector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.connector-line {
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  background: var(--border-light);
+  transform-origin: left center;
+}
+
+.connector.active .connector-line {
+  background: var(--accent-primary);
+}
+
+.connector-arrow {
+  color: var(--text-muted);
+  font-size: 16px;
+  position: relative;
+  z-index: 1;
+  background: var(--bg-secondary);
+  padding: 0 4px;
+}
+
+.connector.active .connector-arrow {
+  color: var(--accent-primary);
+}
+
+/* Loading state */
+.pipeline-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 20px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.loading-pulse {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.7; }
+}
+
+/* Empty state */
+.pipeline-empty {
+  text-align: center;
+  padding: 32px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .pipeline-stages {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .stage-wrapper {
+    flex-direction: column;
+  }
+
+  .connector {
+    width: 100%;
+    height: 24px;
+    transform: rotate(90deg);
+  }
+}
+
